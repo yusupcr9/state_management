@@ -1,21 +1,46 @@
+import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
+import 'package:state_management/domain/auth/model/login_request.dart';
+import 'package:state_management/domain/auth/model/login_response.dart';
 
 class AuthRepository {
   final Dio _dio = Dio();
 
-  Future<String> SignInUserWithEmailAndPassword({
-    required String email,
-    required String password,
-  }) async {
+  Future<Either<String, LoginResponse>> SignInUserWithEmailAndPassword(
+      {required LoginRequest loginRequest}) async {
     Response _response;
     String url = "https://reqres.in/api/login";
 
-    Map<String, dynamic> requestData = {
-      "email": email,
-      "password": password,
-    };
-    _response = await _dio.post(url, data: requestData);
-    String _result = _response.data.toString();
-    return _result;
+    try {
+      _response = await _dio.post(url, data: loginRequest.toJson());
+      LoginResponse _loginResp = LoginResponse.fromJson(_response.data);
+      return right(_loginResp);
+    } on DioError catch (e) {
+      print(e.response!.statusCode);
+      String errorMessage = e.response!.data.toString();
+
+      switch (e.type) {
+        case DioErrorType.connectTimeout:
+          // TODO: Handle this case.
+          break;
+        case DioErrorType.sendTimeout:
+          // TODO: Handle this case.
+          break;
+        case DioErrorType.receiveTimeout:
+          // TODO: Handle this case.
+          break;
+        case DioErrorType.response:
+          // TODO: Handle this case.
+          errorMessage = e.response!.data['error'];
+          break;
+        case DioErrorType.cancel:
+          // TODO: Handle this case.
+          break;
+        case DioErrorType.other:
+          // TODO: Handle this case.
+          break;
+      }
+      return left(errorMessage);
+    }
   }
 }

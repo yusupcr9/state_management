@@ -6,6 +6,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:state_management/application/auth/cubit/auth_cubit.dart';
+import 'package:state_management/domain/auth/model/login_request.dart';
 import 'package:state_management/presentation/home/home_page.dart';
 
 class SignInPage extends StatefulWidget {
@@ -25,13 +26,19 @@ class _SignInPageState extends State<SignInPage> {
         child: BlocConsumer<AuthCubit, AuthState>(
           listener: (context, state) {
             if (state is AuthError) {
-              print(state.errorMessage);
+              showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                        title: Text("Error"),
+                        content: Text(state.errorMessage),
+                      ));
             } else if (state is AuthLoading) {
               print("Loading...");
             } else if (state is AuthLoginSuccess) {
               print(state.dataLogin);
-              Navigator.of(context)
-                  .push(MaterialPageRoute(builder: (context) => HomePage()));
+              Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) =>
+                      HomePage(loginResponse: state.dataLogin)));
             }
           },
           builder: (context, state) {
@@ -86,22 +93,9 @@ class _SignInPageState extends State<SignInPage> {
                       Row(
                         children: <Widget>[
                           Expanded(
-                            child: ElevatedButton(
-                              onPressed: () {
-                                context.read<AuthCubit>().signInUser(
-                                      _emailController.text,
-                                      _passwordController.text,
-                                    );
-                              },
-                              style: ElevatedButton.styleFrom(
-                                primary: Colors.cyan,
-                              ),
-                              child: Text(
-                                'Login',
-                                style: TextStyle(
-                                    color: Colors.white70, fontSize: 16.0),
-                              ),
-                            ),
+                            child: (state is AuthLoading)
+                                ? loginButtonLoading()
+                                : loginButton(context),
                           ),
                         ],
                       ),
@@ -121,5 +115,29 @@ class _SignInPageState extends State<SignInPage> {
         ),
       ),
     );
+  }
+
+  ElevatedButton loginButton(BuildContext context) {
+    return ElevatedButton(
+      onPressed: () {
+        final _requestData = LoginRequest(
+          email: _emailController.text,
+          password: _passwordController.text,
+        );
+
+        context.read<AuthCubit>().signInUser(_requestData);
+      },
+      style: ElevatedButton.styleFrom(
+        primary: Colors.cyan,
+      ),
+      child: Text(
+        'Login',
+        style: TextStyle(color: Colors.white70, fontSize: 16.0),
+      ),
+    );
+  }
+
+  ElevatedButton loginButtonLoading() {
+    return ElevatedButton(onPressed: null, child: CircularProgressIndicator());
   }
 }

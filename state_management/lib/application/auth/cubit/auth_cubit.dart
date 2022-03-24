@@ -1,5 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
+import 'package:state_management/domain/auth/model/login_request.dart';
+import 'package:state_management/domain/auth/model/login_response.dart';
 import 'package:state_management/infrastructure/auth/auth_repository.dart';
 
 part 'auth_state.dart';
@@ -9,13 +11,17 @@ class AuthCubit extends Cubit<AuthState> {
 
   AuthRepository _authRepository = AuthRepository();
 
-  void signInUser(String email, String password) async {
+  void signInUser(LoginRequest loginRequest) async {
     emit(AuthLoading());
 
     try {
-      String _data = await _authRepository.SignInUserWithEmailAndPassword(
-          email: email, password: password);
-      emit(AuthLoginSuccess(_data));
+      final _data = await _authRepository.SignInUserWithEmailAndPassword(
+          loginRequest: loginRequest);
+
+      _data.fold(
+        (l) => emit(AuthError(l)),
+        (r) => emit(AuthLoginSuccess(r)),
+      );
     } catch (e) {
       emit(AuthError(e.toString()));
     }

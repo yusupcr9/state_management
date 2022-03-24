@@ -13,6 +13,6 @@ class AuthError extends AuthState {
 }
 
 class AuthLoginSuccess extends AuthState {
-  final String dataLogin;
+  final LoginResponse dataLogin;
   AuthLoginSuccess(this.dataLogin);
 }
