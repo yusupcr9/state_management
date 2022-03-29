@@ -35,10 +35,12 @@ class _SignInPageState extends State<SignInPage> {
             } else if (state is AuthLoading) {
               print("Loading...");
             } else if (state is AuthLoginSuccess) {
-              print(state.dataLogin);
-              Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) =>
-                      HomePage(loginResponse: state.dataLogin)));
+              // Save data to local
+              context.read<AuthCubit>().saveDataToLocal(state.dataLogin);
+              print("Save Data To Local");
+            } else if (state is AuthSuccess) {
+              Navigator.of(context)
+                  .push(MaterialPageRoute(builder: (context) => HomePage()));
             }
           },
           builder: (context, state) {
@@ -121,8 +123,10 @@ class _SignInPageState extends State<SignInPage> {
     return ElevatedButton(
       onPressed: () {
         final _requestData = LoginRequest(
-          email: _emailController.text,
-          password: _passwordController.text,
+          email: "eve.holt@reqres.in",
+          password: "asdsd",
+          // email: _emailController.text,
+          // password: _passwordController.text,
         );
 
         context.read<AuthCubit>().signInUser(_requestData);
