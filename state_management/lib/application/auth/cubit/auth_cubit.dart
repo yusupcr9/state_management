@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:bloc/bloc.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:meta/meta.dart';
@@ -32,8 +34,19 @@ class AuthCubit extends Cubit<AuthState> {
   void saveDataToLocal(LoginResponse data) async {
     emit(AuthLoading());
     try {
-      await GetStorage().write(constants.USER_LOCAL_KEY, data);
+      await GetStorage().write(constants.USER_LOCAL_KEY, jsonEncode(data));
       emit(AuthSuccess());
+    } catch (e) {
+      emit(AuthError(e.toString()));
+    }
+  }
+
+  void loadDataFromLocal() async {
+    emit(AuthLoading());
+    try {
+      final _data = await GetStorage().read(constants.USER_LOCAL_KEY);
+      LoginResponse result = LoginResponse.fromJson(jsonDecode(_data));
+      emit(AuthLoginSuccess(result));
     } catch (e) {
       emit(AuthError(e.toString()));
     }
