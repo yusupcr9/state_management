@@ -23,7 +23,7 @@ class _SplashScreenState extends State<SplashScreen> {
           print(state.toString());
           if (state is AuthLoginSuccess) {
             Navigator.of(context)
-                .push(MaterialPageRoute(builder: (context) => UserPage()));
+                .push(MaterialPageRoute(builder: (context) => HomePage()));
           } else if (state is AuthError) {
             Navigator.of(context)
                 .push(MaterialPageRoute(builder: (context) => SignInPage()));
