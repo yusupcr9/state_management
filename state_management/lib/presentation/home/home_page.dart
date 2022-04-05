@@ -8,6 +8,7 @@ import 'package:state_management/presentation/sign_in/sign_in_page.dart';
 import 'package:state_management/utils/constants.dart' as constants;
 
 import '../../application/profile/bloc/profileb_bloc.dart';
+import '../../domain/core/user/model/user_response.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -46,16 +47,16 @@ class _HomePageState extends State<HomePage> {
         },
         builder: (context, state) {
           return state.maybeMap(
-              orElse: () => homePageError(),
+              orElse: () => homePageError(context),
               isLoading: (e) => homePageLoading(),
-              isSuccess: (value) => homePageScaffold(),
-              isError: (value) => homePageError());
+              isSuccess: (value) => homePageScaffold(value.userResponse.data),
+              isError: (value) => homePageError(context));
         },
       ),
     );
   }
 
-  Scaffold homePageError() {
+  Scaffold homePageError(BuildContext context) {
     return Scaffold(
       body: Center(
         child: Container(
@@ -64,7 +65,13 @@ class _HomePageState extends State<HomePage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text("Something wrong"),
-              IconButton(onPressed: () {}, icon: Icon(Icons.replay_rounded))
+              IconButton(
+                  onPressed: () {
+                    context
+                        .read<ProfilebBloc>()
+                        .add(ProfilebEvent.getUsersData());
+                  },
+                  icon: Icon(Icons.replay_rounded))
             ],
           ),
         ),
@@ -75,7 +82,7 @@ class _HomePageState extends State<HomePage> {
   Scaffold homePageLoading() =>
       Scaffold(body: Center(child: CircularProgressIndicator()));
 
-  Scaffold homePageScaffold() {
+  Scaffold homePageScaffold(List<UserData>? _data) {
     return Scaffold(
       appBar: AppBar(
         title: Text(_loginResponse.token.toString()),
@@ -91,8 +98,12 @@ class _HomePageState extends State<HomePage> {
       ),
       body: Container(
         child: ListView.builder(
+          itemCount: _data?.length,
           itemBuilder: (context, index) => ListTile(
-            title: Text("data"),
+            leading: CircleAvatar(
+                backgroundImage: NetworkImage(_data![index].avatar!)),
+            subtitle: Text(_data[index].email!),
+            title: Text(_data[index].firstName!),
           ),
         ),
       ),
