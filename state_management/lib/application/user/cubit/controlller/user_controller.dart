@@ -10,4 +10,9 @@ class UserController extends GetxController {
   }
 
   List<UserData2> get getListUserData => this._listUserData;
+
+  deleteDataOnList(UserData2 data) {
+    _listUserData.remove(data);
+    update();
+  }
 }
